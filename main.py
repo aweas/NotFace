@@ -54,8 +54,8 @@ class Server:
         while len(data) < length:
             msg = self.conn.recv(length-len(data))
             data += msg
-            # if not msg:
-            #     break
+            if not msg:
+                break
 
         return data
 
@@ -85,29 +85,30 @@ if __name__ == "__main__":
         img = plt.imread('image.jpeg')
         plt.imshow(img)
         img = scipy.misc.imresize(img, (64, 64, 3))
-        plt.show()
+
         prediction = srv.predict(np.array([img]))
 
         srv.conn.sendall(prediction)
 
         plt.title(prediction)
+        plt.show()
         plt.pause(1)
 
-    # # DZIAłA
-    import socket
-    sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sck.bind(('', 5007))
-    sck.listen()
-    print('Listened')
-    conn, addr = srv.socket.accept()
-    print('Accepted')
-    # while True:
-    time.sleep(2)
-    msg = conn.recv(1024)
-    print(msg)
-        # if not msg:
-        #     break
-    print('Received')
-    conn.sendall(b'test2\r\n')
-    print('Sent')
-    conn.close()
+    # # # DZIAłA
+    # import socket
+    # sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # sck.bind(('', 5007))
+    # sck.listen()
+    # print('Listened')
+    # conn, addr = srv.socket.accept()
+    # print('Accepted')
+    # # while True:
+    # time.sleep(2)
+    # msg = conn.recv(1024)
+    # print(msg)
+    #     # if not msg:
+    #     #     break
+    # print('Received')
+    # conn.sendall(b'test2\r\n')
+    # print('Sent')
+    # conn.close()
