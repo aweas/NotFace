@@ -42,12 +42,14 @@ class Server:
 
     def read_data(self, msg_length=1024):
         self.conn, self.addr = self.socket.accept()
-        time.sleep(2)
 
         length = self.conn.recv(msg_length)
-        print(length)
-        data = b''
         length = int.from_bytes(length, byteorder='big')
+        while length == 0:
+            length = self.conn.recv(msg_length)
+            length = int.from_bytes(length, byteorder='big')
+
+        data = b''
         print(length)
         self.conn.sendall(b'OK\r\n')
 
@@ -83,32 +85,8 @@ if __name__ == "__main__":
         image.close()
 
         img = plt.imread('image.jpeg')
-        plt.imshow(img)
         img = scipy.misc.imresize(img, (64, 64, 3))
 
         prediction = srv.predict(np.array([img]))
 
         srv.conn.sendall(prediction)
-
-        plt.title(prediction)
-        plt.show()
-        plt.pause(1)
-
-    # # # DZIAłA
-    # import socket
-    # sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # sck.bind(('', 5007))
-    # sck.listen()
-    # print('Listened')
-    # conn, addr = srv.socket.accept()
-    # print('Accepted')
-    # # while True:
-    # time.sleep(2)
-    # msg = conn.recv(1024)
-    # print(msg)
-    #     # if not msg:
-    #     #     break
-    # print('Received')
-    # conn.sendall(b'test2\r\n')
-    # print('Sent')
-    # conn.close()

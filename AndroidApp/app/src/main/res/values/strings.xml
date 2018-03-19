@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">NotFaceAndroid</string>
+    <string name="hello_text">Hello world</string>
+    <string name="btn_clicked">You clicked a button!</string>
+    <string name="row_FaceDetection">Face detection</string>
+    <string name="image_detect">Image to be analysed</string>
+    <string name="title_activity_face_detection">Face detection</string>
+    <string name="title_activity_face_detection_server">faceDetectionServer</string>
+    <string name="row_ServerProcessing">Process on server</string>
+    <string name="server_compress">Compressing image</string>
+    <string name="server_send">Sending image</string>
+    <string name="server_waiting">Awaiting response</string>
+    <string name="server_face">Answer: Face</string>
+    <string name="server_notFace">Answer: notFace</string>
+    <string name="server_error">Error ecountered</string>
+    <string name="server_ans_face">Face</string>
+    <string name="server_ans_notFace">notFace</string>
+</resources>
