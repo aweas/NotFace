@@ -8,4 +8,6 @@
 /captures
 .externalNativeBuild
 .ipynb_checkpoints
-.gitignor*
+.gitignore
+.gitignore~
+..gitignore.un~
