@@ -7,4 +7,4 @@
 /build
 /captures
 .externalNativeBuild
-.ipynb_checkpoints
+/.ipynb_checkpoints
