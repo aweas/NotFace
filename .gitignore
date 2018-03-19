@@ -8,3 +8,4 @@
 /captures
 .externalNativeBuild
 .ipynb_checkpoints
+.gitignor*
