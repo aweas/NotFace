@@ -16,7 +16,7 @@ class Server:
         self.conn = None
         self.addr = None
 
-    def load_model(self, model_json='model.json', model_weights="weights_1.dat"):
+    def load_model(self, model_json='model_files/model.json', model_weights="model_files/weights_1.dat"):
         json_file = open(model_json, 'r')
         loaded_model_json = json_file.read()
         json_file.close()
@@ -24,7 +24,7 @@ class Server:
         self.model = keras.models.model_from_json(loaded_model_json)
         self.model.load_weights(model_weights)
 
-    def test_model(self, face='face.jpg', not_face='notFace.jpg'):
+    def test_model(self, face='model_files/face.jpg', not_face='model_files/notFace.jpg'):
         not_face = scipy.misc.imresize(plt.imread(not_face), shape)
         face = scipy.misc.imresize(plt.imread(face), shape)
 
@@ -42,7 +42,7 @@ class Server:
 
     def read_data(self, msg_length=1024):
         self.conn, self.addr = self.socket.accept()
-
+        print('Connection accepted')
         length = self.conn.recv(msg_length)
         length = int.from_bytes(length, byteorder='big')
         while length == 0:
