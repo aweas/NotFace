@@ -24,7 +24,7 @@ class FaceFinder:
 
     def process_photo(self, img_name, patch_size=64):
         self.img = plt.imread(img_name)
-        self.img = scipy.misc.imresize(self.img, (self.img.shape[1], self.img.shape[1], 3))
+        self.img = scipy.misc.imresize(self.img, (256, 256, 3))
         self.img_orig = self.img.copy()
 
         self._split_pic_into_frames(size=patch_size)
@@ -77,12 +77,17 @@ class FaceFinder:
         self.img.setflags(write=1)
 
         for start, end, pred in zip(coord_start, coord_end, self.preds):
+            if pred < 0.5:
+                self.img[max(0, start[0]-3):end[0]+3, max(0, start[1]-3):end[1]+3] = [255, 0, 0]
+
+        for start, end, pred in zip(coord_start, coord_end, self.preds):
             R = self.img_orig[start[0]:end[0], start[1]:end[1]][:, :, 0]
             G = self.img_orig[start[0]:end[0], start[1]:end[1]][:, :, 1]
             B = self.img_orig[start[0]:end[0], start[1]:end[1]][:, :, 2]
-            self.img[start[0]:end[0], start[1]:end[1]][:, :, 0] = np.array(R*pred).astype(np.uint8)
-            self.img[start[0]:end[0], start[1]:end[1]][:, :, 1] = np.array(G*pred).astype(np.uint8)
-            self.img[start[0]:end[0], start[1]:end[1]][:, :, 2] = np.array(B*pred).astype(np.uint8)
+            if pred < 0.5:
+                self.img[start[0]:end[0], start[1]:end[1]][:, :, 0] = R
+                self.img[start[0]:end[0], start[1]:end[1]][:, :, 1] = G
+                self.img[start[0]:end[0], start[1]:end[1]][:, :, 2] = B
 
         return self.img, self.img_orig
 
@@ -266,7 +271,7 @@ def fit(X, y, X_test, y_test, sess):
 
         for epoch in range(5):
             loss_sum = 0
-            for i in tqdm.trange(n_iterations):
+            for _ in tqdm.trange(n_iterations):
                 _, ls = sess.run([train_op, loss])
                 loss_sum += ls
             print('\nTraining loss: %f' % (loss_sum/n_iterations))
@@ -292,3 +297,4 @@ plt.subplot(121)
 plt.imshow(img_orig)
 plt.subplot(122)
 plt.imshow(img)
+plt.show()
