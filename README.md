@@ -14,3 +14,4 @@ Simple face-notFace classificator app
 </p>
 
 ## Jupyter version
+<img src="https://i.imgur.com/WuCK8gb.png"/>
