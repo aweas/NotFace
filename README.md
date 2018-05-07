@@ -1,6 +1,9 @@
 # NotFace
 Simple face-notFace classificator app   
 
+## Jupyter version
+<img src="https://i.imgur.com/eAPnI0z.png"/>
+
 ## App version
 <p align="center">
   <p>App view</p>
@@ -12,6 +15,3 @@ Simple face-notFace classificator app
   <p>Server result</p>
   <img src="https://i.imgur.com/B40apb6.png" width="350"/>
 </p>
-
-## Jupyter version
-<img src="https://i.imgur.com/WuCK8gb.png"/>
