@@ -5,13 +5,22 @@ Simple face-notFace classificator app
 <img src="https://i.imgur.com/eAPnI0z.png"/>
 
 ## App version
-<p align="center">
+
+### Sent face photo
   <p>App view</p>
   <img src="https://i.imgur.com/heQZmFl.png" width="350"/>
   <p>Server result</p>
   <img src="https://i.imgur.com/SSUTQR5.png" width="350"/>
+  
+### Sent juice photo
   <p>App view</p>
   <img src="https://i.imgur.com/ZNdBatx.png" width="350"/>
   <p>Server result</p>
   <img src="https://i.imgur.com/B40apb6.png" width="350"/>
-</p>
+  
+### Embedded face photo
+  <p>App view</p>
+  <img src="https://i.imgur.com/gBynVy2.png" width="350"/>
+  <p>Server result</p>
+  <img src="https://i.imgur.com/iSg7IfU.png" width="350"/>
+
