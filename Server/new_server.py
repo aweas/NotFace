@@ -268,7 +268,6 @@ class Server:
         return data
 
     def stop_server(self):
-        # self.socket.shutdown(SHUT_RDWR)
         self.socket.close()
 
 
@@ -287,6 +286,7 @@ try:
     facefinder = FaceFinder(prediction_model)
 
     while True:
+        print('')
         image = open('image.jpeg', 'wb')
         data = srv.read_data()
         image.write(data)
@@ -296,7 +296,6 @@ try:
             'image.jpeg', patch_size=patch_size, stride=stride)[1])
         plt.show()
         srv.conn.sendall(b'0')
-        print('')
 
 except Exception as e:
     srv.stop_server()
