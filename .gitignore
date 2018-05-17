@@ -9,3 +9,4 @@
 .externalNativeBuild
 /.ipynb_checkpoints
 /logs
+*.ckpt*
