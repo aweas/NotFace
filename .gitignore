@@ -10,3 +10,4 @@
 /.ipynb_checkpoints
 /logs
 *.ckpt*
+Server/test.py
