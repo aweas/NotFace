@@ -1,5 +1,6 @@
 *.iml
 *.jpg
+*.jpg
 .gradle
 /local.properties
 /.idea
@@ -7,7 +8,8 @@
 /build
 /captures
 .externalNativeBuild
-/.ipynb_checkpoints
+Jupyter_notebooks/.ipynb_checkpoints/
 /logs
 *.ckpt*
 Server/test.py
+trained_models/checkpoint

@@ -14,8 +14,8 @@ warnings.filterwarnings("ignore")
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 shape = (64, 64, 3)
-patch_size = 50
-stride = 1 / 10
+patch_size = 32
+stride = 1/2
 
 
 class PredictionModel:
@@ -38,6 +38,9 @@ class PredictionModel:
         self.path_to_model = f'{model_dir}/{max(duplicates_removed)}'
 
         print('Latest model found:', self.path_to_model)
+        date = self.path_to_model.split('/')[-1].split('_')[1]
+        time = self.path_to_model.split('/')[-1].split('_')[2].split('.')[0].split('-')
+        print(f'Training time: {date} {time[0]}:{time[1]}')
 
     def inference(self, inputs):
         inputs = tf.cast(inputs, tf.float32)
@@ -154,6 +157,7 @@ class FaceFinder:
         self._split_pic_into_frames(size=patch_size, stride=stride)
         print('Running predictions')
         self._run_predictions()
+        self._rectangify_patches()
         print('Marking photo')
         return self._mark_photo()
 
@@ -174,12 +178,13 @@ class FaceFinder:
         print(f'Split into {len(self.patches)} frames')
 
     def _rectangify_patches(self):
-        columns = int(np.sqrt(len(self.preds)))
+        columns = np.ceil(self.img.shape[1]/patch_size/stride).astype(int)
+        rows = np.ceil(self.img.shape[0]/patch_size/stride).astype(int)
 
         cont = True
         while cont:
             cont = False
-            for r in range(columns - 1):
+            for r in range(rows - 1):
                 for c in range(columns - 1):
                     if self.preds[r * columns + c] == 0:
                         LD = self.preds[(r + 1) * columns + c - 1]
@@ -192,10 +197,10 @@ class FaceFinder:
                         RG = self.preds[(r - 1) * columns + c + 1]
 
                         answ = L * LD * SD + SD * RD * R + R * RG * SG + SG * LG * L
-
                         if answ >= 1:
                             cont = True
                             self.preds[r * columns + c] = 1
+
 
     def _mark_photo(self):
         coord_start = np.array(self.patches)[:, 1]
@@ -268,6 +273,7 @@ class Server:
         return data
 
     def stop_server(self):
+        # self.socket.shutdown(SHUT_RDWR)
         self.socket.close()
 
 
@@ -286,7 +292,6 @@ try:
     facefinder = FaceFinder(prediction_model)
 
     while True:
-        print('')
         image = open('image.jpeg', 'wb')
         data = srv.read_data()
         image.write(data)
@@ -296,6 +301,7 @@ try:
             'image.jpeg', patch_size=patch_size, stride=stride)[1])
         plt.show()
         srv.conn.sendall(b'0')
+        print('')
 
 except Exception as e:
     srv.stop_server()
