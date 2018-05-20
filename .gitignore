@@ -12,4 +12,5 @@ Jupyter_notebooks/.ipynb_checkpoints/
 /logs
 *.ckpt*
 Server/test.py
-trained_models/checkpoint
+trained_models/checkpoint*
+__pycache__
