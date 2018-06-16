@@ -6,28 +6,27 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.transition.Explode;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,17 +34,22 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.Socket;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 
@@ -64,74 +68,77 @@ public class faceDetectionServer extends AppCompatActivity {
     private static final int COMPRESSING_IMAGE = 0;
     private static final int SENDING_IMAGE = 1;
     private static final int AWAITING_RESPONSE = 2;
-    private static final int ANSWER_FACE = 10;
-    private static final int ANSWER_NOT_FACE = 11;
+    private static final int ANSWER_RECEIVED = 10;
 
     class resultFetcher implements Runnable {
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private String getCompressedImage() {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            currentBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            byte[] bytes = byteArrayOutputStream.toByteArray();
+            return Base64.getEncoder().encodeToString(bytes);
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void run() {
             IP = ((EditText)findViewById(R.id.tf_IP)).getText().toString();
 
             handler.obtainMessage(COMPRESSING_IMAGE).sendToTarget();
 
-            final byte[] byteArray = getCompressedImage();
+            String imageB64 = getCompressedImage();
+            String postData = null;
+            String type = "application/x-www-form-urlencoded";
+            String encodedData = null;
+            OutputStream out = null;
 
             try {
+                // Encode data"image="+imageB64;
+                encodedData = URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(imageB64, "UTF-8");
+
+                // Form server connection
+                URL u = new URL("http://"+IP+":5007");
+                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                conn.setDoOutput(true);
+                conn.setRequestMethod("POST");
+
+                // Create output streams
+                out = new BufferedOutputStream(conn.getOutputStream());
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
+
+                // Connect to server
+                conn.connect();
+
+                // Send data
                 handler.obtainMessage(SENDING_IMAGE).sendToTarget();
+                writer.write(encodedData);
+                writer.flush();
+                writer.close();
+                out.close();
 
-                Socket socket = new Socket(IP, 5007);
-                DataOutputStream os = new DataOutputStream(socket.getOutputStream());
-                os.writeInt(byteArray.length);
-                os.flush();
-
-//                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                DataInputStream in = new DataInputStream(socket.getInputStream());
-                in.readLine();
-
-                os.write(byteArray);
-                os.flush();
-
+                // Read response
                 handler.obtainMessage(AWAITING_RESPONSE).sendToTarget();
-//                while(true) {
-//                    Thread.sleep(100);
-//                    result = in.readUTF();
-//                    // Dirty hack for some error
-//                    if(!result.equals(""))
-//                        break;
-//                }
-                boolean eof = false;
-                while(result.equals("")) {
-                    while (!eof) {
-                        try {
-                            result = in.readUTF();
-                        } catch (EOFException e) {
-                            eof = true;
-                        }
-                    }
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
                 }
+                String final_response = response.toString().replace("\"", "");
 
-                if(result.equals("Face"))
-                    handler.obtainMessage(ANSWER_FACE).sendToTarget();
-                else if(result.equals("notFace"))
-                    handler.obtainMessage(ANSWER_NOT_FACE).sendToTarget();
+                byte[] b = Base64.getDecoder().decode(final_response);
 
-                result = null;
-                in.close();
-
-                os.close();
-                socket.close();
+                currentBitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+                handler.obtainMessage(ANSWER_RECEIVED).sendToTarget();
             }
-            catch(Exception e) {
-                System.err.println(e);
-                handler.obtainMessage(ERROR).sendToTarget();
+            catch (MalformedURLException err) {
+                Log.e("faceDetectionServer/connectionError", err.getMessage());
+            }
+            catch (Exception e){
+                Log.e("faceDetectionServer", e.getMessage());
             }
         }
-    }
 
-    private byte[] getCompressedImage() {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        currentBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-        return byteArrayOutputStream.toByteArray();
     }
 
     class UIHandler extends Handler {
@@ -153,13 +160,9 @@ public class faceDetectionServer extends AppCompatActivity {
                 case AWAITING_RESPONSE:
                     tv_status.setText(R.string.server_waiting);
                     break;
-                case ANSWER_FACE:
+                case ANSWER_RECEIVED:
                     tv_status.setText(R.string.server_face);
-//                    tv_bitmap.setText(R.string.server_ans_face);
-                    break;
-                case ANSWER_NOT_FACE:
-                    tv_status.setText(R.string.server_notFace);
-//                    tv_bitmap.setText(R.string.server_ans_notFace);
+                    iv_display.setImageBitmap(currentBitmap);
                     break;
                 case ERROR:
                     tv_status.setText(R.string.server_error);

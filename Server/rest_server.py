@@ -252,6 +252,7 @@ class AIServer(Resource):
     def post(self):
         # Retrieve image from args
         args = self.parser.parse_args()
+
         image_bytes = base64.b64decode(str(args['image']))
         image = Image.open(io.BytesIO(image_bytes))
 
@@ -259,11 +260,14 @@ class AIServer(Resource):
         processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=patch_size, stride=stride)[1]
         processed_img = Image.fromarray(processed_img_base, 'RGB')
 
+        processed_img.show()
+
         # Send back to user
         buff = io.BytesIO()
         processed_img.save(buff, format='JPEG')
         img_str = base64.b64encode(buff.getvalue())
-        return str(img_str)
+        print(img_str.decode("utf-8"))
+        return img_str.decode("utf-8") 
 
 
 def preprocess_image(img):
@@ -282,4 +286,4 @@ if __name__ == "__main__":
     api = Api(app)
     api.add_resource(AIServer, '/')
 
-    app.run(port='5007')
+    app.run(host='192.168.1.10', port='5007')
