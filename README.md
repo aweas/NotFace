@@ -1,6 +1,6 @@
 # NotFace
 Plans: face recognision app   
-Reality: face marking in jupyter notebook, face classification in app
+Reality: veeeery approximate face marking, working via REST api
 
 ## App version
 <img src="https://i.imgur.com/jhWmExz.jpg" width="350"/>
