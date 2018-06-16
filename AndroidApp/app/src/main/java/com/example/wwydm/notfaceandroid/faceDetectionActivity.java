@@ -9,7 +9,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -57,14 +56,14 @@ public class faceDetectionActivity extends AppCompatActivity {
     }
 
     private void recognizeFace(int[] rgb_map) {
-        float[] outputs = new float[2];
-
-        TensorFlowInferenceInterface tensorflow = new TensorFlowInferenceInterface(getAssets(), "file:///android_asset/raw/model.pb");
-        tensorflow.feed("main_input", rgb_map, 1, 64, 64, 3);
-        tensorflow.run(new String[]{"main_output/Softmax"}, false);
-        tensorflow.fetch("main_output/Softmax", outputs);
-
-        ((TextView)findViewById(R.id.tv_bitmap)).setText(Float.toString(outputs[0]));
+//        float[] outputs = new float[2];
+//
+//        TensorFlowInferenceInterface tensorflow = new TensorFlowInferenceInterface(getAssets(), "file:///android_asset/raw/model.pb");
+//        tensorflow.feed("main_input", rgb_map, 1, 64, 64, 3);
+//        tensorflow.run(new String[]{"main_output/Softmax"}, false);
+//        tensorflow.fetch("main_output/Softmax", outputs);
+//
+//        ((TextView)findViewById(R.id.tv_bitmap)).setText(Float.toString(outputs[0]));
     }
 
     private int[] getRGBMap(Bitmap resized) {

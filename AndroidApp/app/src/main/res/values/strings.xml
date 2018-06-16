@@ -15,4 +15,12 @@
     <string name="server_error">Error ecountered</string>
     <string name="server_ans_face">Face</string>
     <string name="server_ans_notFace">notFace</string>
+    <string name="server_ip">192.168.1.7</string>
+    <string name="title_activity_photos_overview">photosOverview</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="row_carViewTest">Card view tests</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus at risus orci. Curabitur accumsan interdum eros a accumsan. Vestibulum dictum sodales turpis, ac egestas sapien fermentum eget. Nullam eget quam facilisis, blandit eros quis, fringilla nulla. Sed arcu urna, ultrices ut sem eget, sodales pulvinar velit. In eu tortor nisl. Fusce porttitor feugiat aliquam.  In vehicula sem vel nulla faucibus, eu varius quam interdum. Fusce cursus metus commodo dapibus euismod. Nunc porta mauris sem, quis hendrerit turpis tincidunt nec. Suspendisse quis ligula et tellus feugiat eleifend at non urna. Aliquam vestibulum hendrerit neque. Aliquam ut purus facilisis, tristique dolor ut, cursus est. Sed varius ultrices nisi, in blandit elit viverra pharetra. Aliquam ex eros, gravida non molestie hendrerit, vulputate quis nisi. Praesent sed justo at arcu venenatis molestie non vestibulum velit. Cras ac leo malesuada, viverra elit nec, sollicitudin dui.  Phasellus posuere posuere gravida. Integer in diam nunc. Maecenas eleifend blandit diam ac posuere. Maecenas ante purus, viverra et varius quis, euismod at nisl. Praesent elementum rutrum sollicitudin. Cras ut arcu sit amet velit posuere maximus. Integer aliquet turpis a ligula congue imperdiet. Nunc feugiat ultricies augue sit amet scelerisque. Donec blandit a felis eget sodales. Nulla rutrum vulputate venenatis. Sed ultricies metus tellus, id feugiat erat accumsan nec. In quis neque ligula. Cras sed rhoncus dui, non facilisis mauris. Curabitur vitae vehicula justo, vel malesuada libero.</string>
+    <string name="title_activity_photos_details">photosDetails</string>
 </resources>

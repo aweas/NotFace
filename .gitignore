@@ -2,10 +2,11 @@
 *.jpg
 *.jpg
 .gradle
-/local.properties
-/.idea
+local.properties
+.idea
 .DS_Store
-/build
+AndroidApp/app/build
+AndroidApp/.idea
 /captures
 .externalNativeBuild
 Jupyter_notebooks/.ipynb_checkpoints/

@@ -8,8 +8,8 @@
     tools:context="com.example.wwydm.notfaceandroid.MainActivity">
 
     <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -20,17 +20,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:divider="?attr/dividerVertical"
+            android:orientation="vertical"
+            android:showDividers="middle|end">
 
             <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="visible">
+                android:onClick="onClick"
+                android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="44dp"
+                    android:layout_width="50dp"
                     android:layout_height="match_parent"
-                    app:srcCompat="@android:drawable/ic_lock_lock" />
+                    app:srcCompat="@android:drawable/ic_media_pause" />
 
                 <TextView
                     android:id="@+id/textView"
@@ -38,10 +41,12 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:enabled="false"
-                    android:onClick="onClick"
+                    android:fontFamily="sans-serif"
+                    android:paddingVertical="20dp"
                     android:text="@string/row_FaceDetection"
-                    android:textAppearance="@android:style/TextAppearance.Material.Display1"
+                    android:textAppearance="@android:style/TextAppearance.Material.Title"
                     android:textColor="@android:color/black" />
+
             </TableRow>
 
             <TableRow
@@ -50,7 +55,7 @@
                 android:visibility="visible">
 
                 <ImageView
-                    android:layout_width="43dp"
+                    android:layout_width="50dp"
                     android:layout_height="match_parent"
                     app:srcCompat="@android:drawable/ic_menu_send" />
 
@@ -59,10 +64,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clickable="true"
+                    android:fontFamily="sans-serif"
                     android:onClick="viewServer"
+                    android:paddingVertical="20dp"
                     android:text="@string/row_ServerProcessing"
-                    android:textColor="@android:color/black"
-                    android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+                    android:textAppearance="@android:style/TextAppearance.Material.Title"
+                    android:textColor="@android:color/black" />
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/row_cardView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:onClick="switchToCardView"
+                android:visibility="visible">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    app:srcCompat="@android:drawable/ic_menu_myplaces" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:fontFamily="sans-serif"
+                    android:onClick="switchToCardView"
+                    android:paddingVertical="20dp"
+                    android:text="@string/row_carViewTest"
+                    android:textAppearance="@android:style/TextAppearance.Material.Title"
+                    android:textColor="@android:color/black" />
             </TableRow>
         </LinearLayout>
 

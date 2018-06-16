@@ -1,13 +1,17 @@
 import numpy as np
 import tensorflow as tf
+from PIL import Image
 import matplotlib.pyplot as plt
 import socket
 import scipy.misc
+import io
 import base64
 import time
 import skimage.transform
 from os import listdir
 from os import environ
+from flask import Flask, request
+from flask_restful import reqparse, Resource, Api
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -39,7 +43,8 @@ class PredictionModel:
 
         print('Latest model found:', self.path_to_model)
         date = self.path_to_model.split('/')[-1].split('_')[1]
-        time = self.path_to_model.split('/')[-1].split('_')[2].split('.')[0].split('-')
+        time = self.path_to_model.split(
+            '/')[-1].split('_')[2].split('.')[0].split('-')
         print(f'Training time: {date} {time[0]}:{time[1]}')
 
     def inference(self, inputs):
@@ -144,9 +149,9 @@ class FaceFinder:
         self.proba = None
         self.prediction_model = prediction_model
 
-    def process_photo(self, img_name, patch_size=64, stride=1 / 2):
+    def process_photo(self, img, patch_size=64, stride=1 / 2):
         self.patches = []
-        self.img = plt.imread(img_name)
+        self.img = img
         self.img_not_processed = self.img.copy()
         self.img = preprocess_image(self.img)
         self.img_orig = self.img.copy()
@@ -164,8 +169,8 @@ class FaceFinder:
     def _split_pic_into_frames(self, size, stride):
         sh_x = self.img.shape[1]
         sh_y = self.img.shape[0]
-        len_x = int(sh_x/size)
-        len_y = int(sh_x/size)
+        len_x = int(sh_x / size)
+        len_y = int(sh_x / size)
         stride_x = np.ceil(len_x * stride).astype(int)
         stride_y = np.ceil(len_y * stride).astype(int)
 
@@ -178,8 +183,8 @@ class FaceFinder:
         print(f'Split into {len(self.patches)} frames')
 
     def _rectangify_patches(self):
-        columns = np.ceil(self.img.shape[1]/patch_size/stride).astype(int)
-        rows = np.ceil(self.img.shape[0]/patch_size/stride).astype(int)
+        columns = np.ceil(self.img.shape[1] / patch_size / stride).astype(int)
+        rows = np.ceil(self.img.shape[0] / patch_size / stride).astype(int)
 
         cont = True
         while cont:
@@ -200,7 +205,6 @@ class FaceFinder:
                         if answ >= 1:
                             cont = True
                             self.preds[r * columns + c] = 1
-
 
     def _mark_photo(self):
         coord_start = np.array(self.patches)[:, 1]
@@ -241,77 +245,62 @@ class FaceFinder:
         self.preds = [round(abs(i - 0.3)) for i in self.proba]
 
 
-class Server:
+class AIServer(Resource):
     def __init__(self):
-        self.model = None
-        self.socket = None
-        self.conn = None
-        self.addr = None
+        super()
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('image')
 
-    def start_server(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind(('', 5007))
-        self.socket.listen()
+    def post(self):
+        # Retrieve image from args
+        args = self.parser.parse_args()
+        image_bytes = base64.b64decode(str(args['image']))
+        image = Image.open(io.BytesIO(image_bytes))
 
-    def read_data(self, msg_length=1024):
-        self.conn, self.addr = self.socket.accept()
-        print('Connection accepted')
-        length = self.conn.recv(msg_length)
-        length = int.from_bytes(length, byteorder='big')
-        while length == 0:
-            length = self.conn.recv(msg_length)
-            length = int.from_bytes(length, byteorder='big')
-
-        data = b''
-        print(length, 'bytes read')
-        self.conn.sendall(b'OK\r\n')
-
-        while len(data) < length:
-            msg = self.conn.recv(length - len(data))
-            data += msg
-            if not msg:
-                break
-
-        return data
-
-    def stop_server(self):
-        # self.socket.shutdown(SHUT_RDWR)
-        self.socket.close()
+        # Process it
+        processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=patch_size, stride=stride)[1]
+        processed_img_showable = Image.fromarray(processed_img_base, 'RGB')
+        processed_img_showable.show()
+        return 'OK'
 
 
 def preprocess_image(img):
     return img
 
 
-srv = Server()
-try:
-    srv.start_server()
-    print('Server started')
-
+if __name__ == "__main__":
+    # Load AI model
     prediction_model = PredictionModel()
     prediction_model.restore()
 
+    # Initialize algorithm
     facefinder = FaceFinder(prediction_model)
 
-    while True:
-        image = open('image.jpeg', 'wb')
-        data = srv.read_data()
-        image.write(data)
-        image.close()
+    # Initialize rest API
+    app = Flask(__name__)
+    api = Api(app)
+    api.add_resource(AIServer, '/')
 
-        plt.imshow(facefinder.process_photo(
-            'image.jpeg', patch_size=patch_size, stride=stride)[1])
-        plt.show()
-        srv.conn.sendall(b'0')
-        print('')
+    app.run(port='5007')
+    # try:
+    #     while True:
+    #         image = open('image.jpeg', 'wb')
+    #         data = srv.read_data()
+    #         image.write(data)
+    #         image.close()
 
-except Exception as e:
-    srv.stop_server()
-    print('Exception ocurred: ')
-    print(e)
-    import traceback
-    traceback.print_exc()
+    #         plt.imshow(facefinder.process_photo(
+    #             'image.jpeg', patch_size=patch_size, stride=stride)[1])
+    #         plt.show()
+    #         srv.conn.sendall(b'0')
+    #         print('')
 
-finally:
-    print('Server stopped')
+    # except Exception as e:
+    #     srv.stop_server()
+    #     print('Exception ocurred: ')
+    #     print(e)
+    #     import traceback
+    #     traceback.print_exc()
 
+    # finally:
+    #     print('Server stopped')
