@@ -10,12 +10,12 @@
     <string name="server_compress">Compressing image</string>
     <string name="server_send">Sending image</string>
     <string name="server_waiting">Awaiting response</string>
-    <string name="server_face">Answer: Face</string>
+    <string name="server_face">Answer received</string>
     <string name="server_notFace">Answer: notFace</string>
     <string name="server_error">Error ecountered</string>
     <string name="server_ans_face">Face</string>
     <string name="server_ans_notFace">notFace</string>
-    <string name="server_ip">192.168.1.7</string>
+    <string name="server_ip">192.168.1.10</string>
     <string name="title_activity_photos_overview">photosOverview</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>

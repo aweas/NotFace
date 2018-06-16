@@ -17,7 +17,7 @@ environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 shape = (64, 64, 3)
 patch_size = 4
-stride = 1
+stride = 1/2
 
 
 class PredictionModel:
@@ -260,13 +260,12 @@ class AIServer(Resource):
         processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=patch_size, stride=stride)[1]
         processed_img = Image.fromarray(processed_img_base, 'RGB')
 
-        processed_img.show()
-
         # Send back to user
         buff = io.BytesIO()
         processed_img.save(buff, format='JPEG')
         img_str = base64.b64encode(buff.getvalue())
-        print(img_str.decode("utf-8"))
+
+        print("Answer sent")
         return img_str.decode("utf-8") 
 
 
