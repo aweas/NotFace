@@ -2,17 +2,15 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 import matplotlib.pyplot as plt
-import socket
-import scipy.misc
 import io
 import base64
-import time
 import skimage.transform
 from os import listdir
 from os import environ
 from flask import Flask, request
 from flask_restful import reqparse, Resource, Api
 import warnings
+
 
 warnings.filterwarnings("ignore")
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
@@ -259,14 +257,17 @@ class AIServer(Resource):
 
         # Process it
         processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=patch_size, stride=stride)[1]
-        processed_img_showable = Image.fromarray(processed_img_base, 'RGB')
-        processed_img_showable.show()
-        return 'OK'
+        processed_img = Image.fromarray(processed_img_base, 'RGB')
+
+        # Send back to user
+        buff = io.BytesIO()
+        processed_img.save(buff, format='JPEG')
+        img_str = base64.b64encode(buff.getvalue())
+        return str(img_str)
 
 
 def preprocess_image(img):
     return img
-
 
 if __name__ == "__main__":
     # Load AI model
@@ -282,25 +283,3 @@ if __name__ == "__main__":
     api.add_resource(AIServer, '/')
 
     app.run(port='5007')
-    # try:
-    #     while True:
-    #         image = open('image.jpeg', 'wb')
-    #         data = srv.read_data()
-    #         image.write(data)
-    #         image.close()
-
-    #         plt.imshow(facefinder.process_photo(
-    #             'image.jpeg', patch_size=patch_size, stride=stride)[1])
-    #         plt.show()
-    #         srv.conn.sendall(b'0')
-    #         print('')
-
-    # except Exception as e:
-    #     srv.stop_server()
-    #     print('Exception ocurred: ')
-    #     print(e)
-    #     import traceback
-    #     traceback.print_exc()
-
-    # finally:
-    #     print('Server stopped')
