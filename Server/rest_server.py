@@ -16,8 +16,8 @@ warnings.filterwarnings("ignore")
 environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
 
 shape = (64, 64, 3)
-patch_size = 4
-stride = 1/2
+# patch_size = 4
+# stride = 1/2
 
 
 class PredictionModel:
@@ -147,8 +147,10 @@ class FaceFinder:
         self.proba = None
         self.prediction_model = prediction_model
 
-    def process_photo(self, img, patch_size=64, stride=1 / 2):
-        self.patches = []
+    def process_photo(self, img, patch_size=64, stride=1/2, leave_patches=False):
+        if not leave_patches:
+            self.patches = []
+
         self.img = img
         self.img_not_processed = self.img.copy()
         self.img = preprocess_image(self.img)
@@ -179,6 +181,16 @@ class FaceFinder:
                     self.patches.append(
                         [patch, (y, x), (y + len_y, x + len_x)])
         print(f'Split into {len(self.patches)} frames')
+
+    def _run_predictions(self):
+        a = skimage.transform.resize(
+            self.patches[0][0], shape).reshape((1, *shape))
+        for i in self.patches[1:]:
+            a = np.vstack((a, skimage.transform.resize(
+                i[0], shape).reshape((1, *shape))))
+        self.proba = np.array(
+            self.prediction_model.predict_proba(a))[:, 1]
+        self.preds = [round(abs(i - 0.3)) for i in self.proba]
 
     def _rectangify_patches(self):
         columns = np.ceil(self.img.shape[1] / patch_size / stride).astype(int)
@@ -232,15 +244,6 @@ class FaceFinder:
 
         return self.img, self.img_not_processed
 
-    def _run_predictions(self):
-        a = skimage.transform.resize(
-            self.patches[0][0], shape).reshape((1, *shape))
-        for i in self.patches[1:]:
-            a = np.vstack((a, skimage.transform.resize(
-                i[0], shape).reshape((1, *shape))))
-        self.proba = np.array(
-            self.prediction_model.predict_proba(a))[:, 1]
-        self.preds = [round(abs(i - 0.3)) for i in self.proba]
 
 
 class AIServer(Resource):
@@ -256,8 +259,11 @@ class AIServer(Resource):
         image_bytes = base64.b64decode(str(args['image']))
         image = Image.open(io.BytesIO(image_bytes))
 
+
         # Process it
-        processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=patch_size, stride=stride)[1]
+        facefinder.patches = []
+        for size, stride in zip([2, 4, 5], [1/4, 1/2, 1]):
+            processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=size, stride=stride, leave_patches=True)[1]
         processed_img = Image.fromarray(processed_img_base, 'RGB')
 
         # Send back to user
