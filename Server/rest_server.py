@@ -110,6 +110,9 @@ class PredictionModel:
         pred_x = tf.convert_to_tensor(X, dtype=np.float32)
 
         with self.session.as_default():
+            # with self.session.graph.as_default():
+            [print(n.name) for n in tf.get_default_graph().as_graph_def().node]
+
             with tf.variable_scope("DNN", reuse=True) as scope:
                 logits = self.inference(pred_x)
                 predictions = tf.nn.softmax(logits)
@@ -122,17 +125,17 @@ class PredictionModel:
 
     def restore(self):
         print('Restoring model')
+
         tf.reset_default_graph()
+        self.session = tf.Session()
         dummy_features = np.zeros((1, *shape), dtype=np.float32)
 
         with tf.variable_scope("DNN") as scope:
-            _ = self.inference(dummy_features)
+            infer = self.inference(dummy_features)
 
-        self.session = tf.Session()
+        new_saver = tf.train.Saver()
+        new_saver.restore(self.session, self.path_to_model)
 
-        with self.session.as_default():
-            new_saver = tf.train.Saver()
-            new_saver.restore(self.session, self.path_to_model)
         print('Model restored')
 
 
@@ -147,7 +150,7 @@ class FaceFinder:
         self.proba = None
         self.prediction_model = prediction_model
 
-    def process_photo(self, img, patch_size=64, stride=1/2, leave_patches=False):
+    def process_photo(self, img, patch_size=64, stride=1 / 2, leave_patches=False):
         if not leave_patches:
             self.patches = []
 
@@ -188,6 +191,8 @@ class FaceFinder:
         for i in self.patches[1:]:
             a = np.vstack((a, skimage.transform.resize(
                 i[0], shape).reshape((1, *shape))))
+        print("-------")
+        [print(n.name) for n in tf.get_default_graph().as_graph_def().node]
         self.proba = np.array(
             self.prediction_model.predict_proba(a))[:, 1]
         self.preds = [round(abs(i - 0.3)) for i in self.proba]
@@ -245,10 +250,16 @@ class FaceFinder:
         return self.img, self.img_not_processed
 
 
-
 class AIServer(Resource):
     def __init__(self):
-        super()
+        super().__init__()
+        # Load AI model
+        self.prediction_model = PredictionModel()
+        self.prediction_model.restore()
+
+        # Initialize algorithm
+        self.facefinder = FaceFinder(self.prediction_model)
+
         self.parser = reqparse.RequestParser()
         self.parser.add_argument('image')
 
@@ -259,11 +270,11 @@ class AIServer(Resource):
         image_bytes = base64.b64decode(str(args['image']))
         image = Image.open(io.BytesIO(image_bytes))
 
-
         # Process it
-        facefinder.patches = []
+        self.facefinder.patches = []
         for size, stride in zip([2, 4, 5], [1/4, 1/2, 1]):
-            processed_img_base = facefinder.process_photo(np.asarray(image), patch_size=size, stride=stride, leave_patches=True)[1]
+            processed_img_base = self.facefinder.process_photo(np.asarray(
+                image), patch_size=size, stride=stride, leave_patches=True)[1]
         processed_img = Image.fromarray(processed_img_base, 'RGB')
 
         # Send back to user
@@ -272,23 +283,17 @@ class AIServer(Resource):
         img_str = base64.b64encode(buff.getvalue())
 
         print("Answer sent")
-        return img_str.decode("utf-8") 
+        return img_str.decode("utf-8")
 
 
 def preprocess_image(img):
     return img
 
+
 if __name__ == "__main__":
-    # Load AI model
-    prediction_model = PredictionModel()
-    prediction_model.restore()
-
-    # Initialize algorithm
-    facefinder = FaceFinder(prediction_model)
-
     # Initialize rest API
     app = Flask(__name__)
     api = Api(app)
     api.add_resource(AIServer, '/')
 
-    app.run(host='192.168.1.10', port='5007')
+    app.run(host='192.168.1.8', port='5007')
