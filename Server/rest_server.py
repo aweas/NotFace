@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-import matplotlib.pyplot as plt
 import io
 import base64
 import skimage.transform
