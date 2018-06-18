@@ -109,9 +109,6 @@ class PredictionModel:
         pred_x = tf.convert_to_tensor(X, dtype=np.float32)
 
         with self.session.as_default():
-            # with self.session.graph.as_default():
-            [print(n.name) for n in tf.get_default_graph().as_graph_def().node]
-
             with tf.variable_scope("DNN", reuse=True) as scope:
                 logits = self.inference(pred_x)
                 predictions = tf.nn.softmax(logits)
@@ -190,8 +187,6 @@ class FaceFinder:
         for i in self.patches[1:]:
             a = np.vstack((a, skimage.transform.resize(
                 i[0], shape).reshape((1, *shape))))
-        print("-------")
-        [print(n.name) for n in tf.get_default_graph().as_graph_def().node]
         self.proba = np.array(
             self.prediction_model.predict_proba(a))[:, 1]
         self.preds = [round(abs(i - 0.3)) for i in self.proba]
